@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jira CLI"
+  short_description: "Use Jira Data Center safely from the CLI"
+  default_prompt: "Use $jira-cli to inspect and complete this Jira task safely."

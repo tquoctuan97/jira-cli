@@ -1,0 +1,52 @@
+{
+  "name": "@tquoctuan97/jira-cli",
+  "version": "0.1.0",
+  "description": "AI-native CLI for Jira Data Center",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tquoctuan97/jira-cli.git"
+  },
+  "homepage": "https://github.com/tquoctuan97/jira-cli#readme",
+  "bugs": {
+    "url": "https://github.com/tquoctuan97/jira-cli/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "bin": {
+    "jira-cli": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && esbuild src/index.ts --bundle --packages=external --platform=node --format=esm --target=node20 --outfile=dist/index.js --banner:js='#!/usr/bin/env node'",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "tsx src/index.ts",
+    "format": "prettier --write . --ignore-unknown",
+    "format:check": "prettier --check . --ignore-unknown",
+    "prepack": "npm run test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "esbuild": "^0.25.0",
+    "prettier": "^3.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "zod": "^4.4.3"
+  }
+}
