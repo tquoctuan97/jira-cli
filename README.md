@@ -6,8 +6,8 @@ Jira Data Center CLI with SKILLS.
 to Jira Data Center. It hides REST details, normalizes noisy Jira responses, and
 keeps commands discoverable through `--help`.
 
-The CLI works on its own and ships with an optional first-party Skill for more
-reliable agent workflows.
+The CLI works on its own and publishes an optional first-party Agent Skill for
+more reliable workflows across supported coding agents.
 
 > [!IMPORTANT]
 > `jira-cli` is currently an early-development release. Implemented commands are
@@ -110,21 +110,36 @@ printf '%s' "$JIRA_TOKEN" |
   jira-cli auth login --base-url "$JIRA_BASE_URL" --token-stdin
 ```
 
-### Installing skills
+### Installing the Agent Skill
 
-Install the bundled Skill for the current project:
+The CLI and Agent Skill are installed separately: the CLI executes Jira
+operations, while the Skill teaches coding agents how to use it safely and
+efficiently.
 
-```bash
-jira-cli install --skills
-```
-
-This creates `.agents/skills/jira-cli`. Install it for the current user instead:
+List the skills available in this repository:
 
 ```bash
-jira-cli install --skills --global
+npx skills add tquoctuan97/jira-cli --list
 ```
 
-Use `--force` to replace an existing Skill installation.
+Install `jira-cli` for coding agents detected in the current project:
+
+```bash
+npx skills add tquoctuan97/jira-cli --skill jira-cli
+```
+
+Install it globally for a specific agent:
+
+```bash
+npx skills add tquoctuan97/jira-cli \
+  --skill jira-cli \
+  --agent codex \
+  --global
+```
+
+Use `--yes` for non-interactive installation. See the
+[`skills` CLI](https://github.com/vercel-labs/skills) for supported agents and
+installation options.
 
 ### Skills-less operation
 
@@ -182,13 +197,12 @@ jira-cli issue search \
 
 ## Commands
 
-### Authentication and installation
+### Authentication
 
 ```bash
 jira-cli auth login
 jira-cli auth status
 jira-cli auth logout
-jira-cli install --skills [--global] [--force]
 ```
 
 ### Issues

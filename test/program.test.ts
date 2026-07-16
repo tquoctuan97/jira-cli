@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 import { createProgram } from "../src/cli/program.js";
 
 describe("CLI command tree", () => {
+  it("reports the v0.2.0 release and excludes the removed installer", () => {
+    const program = createProgram();
+
+    expect(program.version()).toBe("0.2.0");
+    expect(program.commands.map((command) => command.name())).not.toContain("install");
+  });
+
   it("rejects an unknown command before loading a Jira session", async () => {
     const program = createProgram();
     await expect(

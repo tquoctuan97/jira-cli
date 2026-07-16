@@ -6,12 +6,11 @@ import { registerAuth } from "./commands/auth.js";
 import { registerComment } from "./commands/comment.js";
 import { registerDiscovery } from "./commands/discovery.js";
 import { registerIssue } from "./commands/issue.js";
-import { registerInstall } from "./commands/install.js";
 import { outputOption, positiveInteger } from "./options.js";
 import { writeError, writeResult } from "./output.js";
 import { Runtime } from "./runtime.js";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 
 export function createProgram(runtime = new Runtime()): Command {
   const program = new Command();
@@ -37,7 +36,6 @@ export function createProgram(runtime = new Runtime()): Command {
   registerComment(program, runtime);
   registerAttachment(program, runtime);
   registerDiscovery(program, runtime);
-  registerInstall(program, runtime);
   return program;
 }
 
