@@ -1,6 +1,3 @@
-import { access } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import type { Command } from "commander";
 import { z } from "zod";
 import type { CommandResult, GlobalOptions } from "../application/contracts.js";
@@ -9,10 +6,8 @@ import { AuthService } from "../application/auth-service.js";
 import { CommentService } from "../application/comment-service.js";
 import { DiscoveryService } from "../application/discovery-service.js";
 import { IssueService } from "../application/issue-service.js";
-import { InstallService } from "../application/install-service.js";
 import { JiraApi } from "../infrastructure/jira/api.js";
 import { JiraClient } from "../infrastructure/jira/client.js";
-import { FilesystemSkillInstaller } from "../infrastructure/install/filesystem-skill-installer.js";
 import { FileCredentialStore } from "../infrastructure/session/credential-store.js";
 import { SessionStore } from "../infrastructure/session/session-store.js";
 
@@ -75,15 +70,6 @@ export class Runtime {
     };
   }
 
-  async installSkills(options: {
-    global: boolean;
-    force: boolean;
-    skillsDir?: string;
-  }): Promise<unknown> {
-    const sourceDirectory = await locateSkillBundle();
-    return new InstallService(new FilesystemSkillInstaller(sourceDirectory)).installSkills(options);
-  }
-
   async jira(options: GlobalOptions): Promise<Services> {
     if (this.services) return this.services;
     const sessions = new SessionStore(options.config);
@@ -98,21 +84,4 @@ export class Runtime {
     };
     return this.services;
   }
-}
-
-async function locateSkillBundle(): Promise<string> {
-  const moduleDirectory = dirname(fileURLToPath(import.meta.url));
-  const candidates = [
-    resolve(moduleDirectory, "../skills/jira-cli"),
-    resolve(moduleDirectory, "../../skills/jira-cli"),
-  ];
-  for (const candidate of candidates) {
-    try {
-      await access(resolve(candidate, "SKILL.md"));
-      return candidate;
-    } catch {
-      // Try the next development or packaged layout.
-    }
-  }
-  return candidates[0]!;
 }

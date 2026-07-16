@@ -8,7 +8,7 @@ jira-cli auth status
 jira-cli auth logout
 ```
 
-Use `JIRA_BASE_URL` and `JIRA_TOKEN`, or `--token-stdin`, for automation. Never pass a token as an argument.
+Use `JIRA_BASE_URL` and `JIRA_TOKEN`, or `--token-stdin`, for automation so command arguments remain credential-free.
 
 ## Issues
 
@@ -26,7 +26,7 @@ jira-cli issue edit-meta <issue-key>
 jira-cli issue history <issue-key>
 ```
 
-Simple fields are `--project`, `--type`, `--summary`, `--description`, `--assignee`, `--priority`, `--labels`, and `--parent`. Project is create-only.
+Simple fields are `--project`, `--type`, `--summary`, `--description`, `--assignee`, `--priority`, `--labels`, and `--parent`. The `--project` field applies to create operations.
 
 ## Workflow, assignment, links, and watchers
 
@@ -67,6 +67,17 @@ jira-cli project get <project-key>
 jira-cli field list
 jira-cli user find --query <text>
 jira-cli user find --assignable-to <issue-key>
+```
+
+`project get` returns normalized `issueTypes` with each type's `id`, `name`, and `subtask` flag. Use it before the first create in a project to select an exact type. After selecting the type, use `issue create-meta` when required-field metadata is needed.
+
+For a subtask, use this discovery flow before creating:
+
+```bash
+jira-cli issue get <parent-key> --fields key,project,summary,status,description
+jira-cli project get <project-key>
+jira-cli issue search --jql 'parent = <parent-key>' --fields key,summary,status --limit 20
+jira-cli issue create-meta --project <project-key> --type <exact-name-or-id>
 ```
 
 Global output options include `--output json|raw|markdown|text`, `--fields <csv>`, `--output-file <path>`, and `--timeout <ms>`.
