@@ -1,3 +1,9 @@
+[![npm version](https://img.shields.io/npm/v/@tquoctuan97/jira-cli.svg?style=flat-square&color=blue)](https://www.npmjs.com/package/@tquoctuan97/jira-cli)
+[![npm downloads](https://img.shields.io/npm/dm/@tquoctuan97/jira-cli.svg?style=flat-square&color=green)](https://www.npmjs.com/package/@tquoctuan97/jira-cli)
+[![GitHub license](https://img.shields.io/github/license/tquoctuan97/jira-cli.svg?style=flat-square&color=orange)](https://github.com/tquoctuan97/jira-cli/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/tquoctuan97/jira-cli.svg?style=flat-square&color=yellow)](https://github.com/tquoctuan97/jira-cli/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/tquoctuan97/jira-cli.svg?style=flat-square&color=red)](https://github.com/tquoctuan97/jira-cli/issues)
+
 # jira-cli
 
 Jira Data Center CLI with SKILLS.
