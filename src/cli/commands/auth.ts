@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { stdin } from "node:process";
+import { stdin, stdout } from "node:process";
 import { normalizeBaseUrl } from "../../application/auth-service.js";
 import { invalidInput } from "../../domain/errors.js";
 import { prompt, promptSecret, readStdin } from "../io.js";
@@ -26,7 +26,10 @@ export function registerAuth(program: Command, runtime: Runtime): void {
       const baseUrl = normalizeBaseUrl(suppliedBaseUrl);
       let token = process.env.JIRA_TOKEN;
       if (!token && local.tokenStdin) token = (await readStdin()).trim();
-      if (!token) token = await promptSecret("Personal access token: ");
+      if (!token) {
+        stdout.write(`\nCreate a Personal Access Token:\n${personalAccessTokenUrl(baseUrl)}\n\n`);
+        token = await promptSecret("Personal access token: ");
+      }
       if (!token) throw invalidInput("A personal access token is required");
       runtime.setResult(await runtime.login(options, baseUrl, token));
     });
@@ -46,4 +49,11 @@ export function registerAuth(program: Command, runtime: Runtime): void {
       const options = runtime.options(command);
       runtime.setResult(await runtime.auth(options).logout());
     });
+}
+
+export function personalAccessTokenUrl(baseUrl: string): string {
+  return new URL(
+    "secure/ViewProfile.jspa?selectedTab=com.atlassian.pats.pats-plugin:jira-user-personal-access-tokens",
+    `${baseUrl}/`,
+  ).toString();
 }

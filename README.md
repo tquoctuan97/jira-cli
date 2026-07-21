@@ -107,7 +107,9 @@ jira-cli auth status
 
 `auth login` accepts only HTTPS Jira URLs. The PAT is entered without terminal
 echo and stored in `~/.config/jira-cli/credentials.json` on Linux and WSL. The
-file is plaintext and protected with filesystem permission `0600`.
+file is plaintext and protected with filesystem permission `0600`. During
+interactive login, the CLI shows a link to the Jira Personal Access Token page
+after the base URL is entered.
 
 For automation, provide credentials without command-line arguments:
 
