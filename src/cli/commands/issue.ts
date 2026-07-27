@@ -201,7 +201,7 @@ function withIssueFields(command: Command, includeProject: boolean): Command {
   return command
     .option("--type <name-or-id>", "issue type")
     .option("--summary <text>", "summary")
-    .option("--description <text>", "description")
+    .option("--description <text>", "description in Jira wiki markup")
     .option("--assignee <username-or-me>", "assignee")
     .option("--priority <name>", "priority")
     .option("--labels <csv>", "labels")

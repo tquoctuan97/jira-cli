@@ -27,6 +27,8 @@ jira-cli issue history <issue-key>
 ```
 
 Simple fields are `--project`, `--type`, `--summary`, `--description`, `--assignee`, `--priority`, `--labels`, and `--parent`. The `--project` field applies to create operations.
+Supply Jira wiki markup to `--description` when the field uses Jira's Wiki Renderer. Read
+[wiki-markup.md](wiki-markup.md) before composing formatted descriptions.
 
 ## Workflow, assignment, links, and watchers
 
@@ -57,7 +59,9 @@ jira-cli attachment download <attachment-id> --output-file <path>
 jira-cli attachment delete <attachment-id> --confirm <attachment-id>
 ```
 
-Use `--body-file <file-or-dash>` for long comment bodies.
+Supply Jira wiki markup to `--body` and `--body-file`. Use `--body-file <file-or-dash>` for long
+or shell-sensitive comment bodies, and read [wiki-markup.md](wiki-markup.md) before composing
+formatted comments.
 
 ## Discovery
 

@@ -174,8 +174,8 @@ jira-cli issue search \
 jira-cli issue transitions FE-123
 jira-cli issue transition FE-123 --to 31
 
-# Add a comment
-jira-cli comment add FE-123 --body 'Ready for review'
+# Add a formatted comment using Jira wiki markup
+jira-cli comment add FE-123 --body '*Ready for review*'
 
 # Download an attachment without overwriting an existing file
 jira-cli attachment download 10042 --output-file ./report.pdf
@@ -230,6 +230,8 @@ jira-cli issue history <issue-key>
 
 Simple field options include `--project`, `--type`, `--summary`, `--description`,
 `--assignee`, `--priority`, `--labels`, and `--parent`. Project is create-only.
+Use the bundled [Jira wiki markup reference](skills/jira-cli/references/wiki-markup.md) for
+formatted descriptions.
 
 ### Workflow and collaboration
 
@@ -260,7 +262,9 @@ jira-cli attachment download <attachment-id> --output-file <path>
 jira-cli attachment delete <attachment-id> --confirm <attachment-id>
 ```
 
-Use `--body-file <file-or-dash>` for long comment bodies.
+Comment bodies use Jira wiki markup. Use the bundled
+[Jira wiki markup reference](skills/jira-cli/references/wiki-markup.md) when composing formatted
+comments, and use `--body-file <file-or-dash>` for long or shell-sensitive bodies.
 
 ### Discovery
 
