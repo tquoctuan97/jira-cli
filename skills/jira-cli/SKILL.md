@@ -19,8 +19,9 @@ Use `jira-cli` as the stable boundary for Jira Data Center operations. Prefer it
 2. Inspect command help when syntax is uncertain: `jira-cli <resource> <action> --help`.
 3. Read before mutating. Retrieve the issue and relevant metadata or transitions before changing workflow-sensitive fields.
 4. Use narrow fields and bounded results. Prefer `--fields key,summary,status,assignee` and a small `--limit`.
-5. Execute the command and parse stdout as JSON. Treat stderr and the process exit code as the error channel.
-6. Verify mutations by reading the affected resource when the result alone is insufficient.
+5. Before writing or updating a comment, description, environment value, or other wiki-rendered multi-line field, read [references/wiki-markup.md](references/wiki-markup.md) and compose Jira wiki markup.
+6. Execute the command and parse stdout as JSON. Treat stderr and the process exit code as the error channel.
+7. Verify mutations by reading the affected resource when the result alone is insufficient.
 
 ## Before creating issues
 
@@ -56,7 +57,7 @@ jira-cli issue get <issue-key> --fields key,summary,status,assignee
 jira-cli issue search --jql 'project = <project-key> ORDER BY updated DESC' --limit 20
 jira-cli issue transitions <issue-key>
 jira-cli issue transition <issue-key> --to <exact-id-or-name>
-jira-cli comment add <issue-key> --body 'Ready for review'
+jira-cli comment add <issue-key> --body '*Ready for review*'
 ```
 
-For the complete supported command surface, read [references/commands.md](references/commands.md). For query construction, read [references/jql.md](references/jql.md). For exit codes and recovery decisions, read [references/errors.md](references/errors.md).
+For the complete supported command surface, read [references/commands.md](references/commands.md). For Jira-rendered text, read [references/wiki-markup.md](references/wiki-markup.md). For query construction, read [references/jql.md](references/jql.md). For exit codes and recovery decisions, read [references/errors.md](references/errors.md).

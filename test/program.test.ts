@@ -23,4 +23,26 @@ describe("CLI command tree", () => {
     ).rejects.toMatchObject({ code: "commander.unknownCommand" });
     expect(program.opts().verbose).toBe(true);
   });
+
+  it("documents Jira wiki markup for rich-text inputs", () => {
+    const program = createProgram();
+    const issueCreate = findCommand(findCommand(program, "issue"), "create");
+    const commentAdd = findCommand(findCommand(program, "comment"), "add");
+
+    expect(issueCreate.options.find((option) => option.long === "--description")?.description).toBe(
+      "description in Jira wiki markup",
+    );
+    expect(commentAdd.options.find((option) => option.long === "--body")?.description).toBe(
+      "comment body in Jira wiki markup",
+    );
+    expect(commentAdd.options.find((option) => option.long === "--body-file")?.description).toBe(
+      "read Jira wiki markup from a file or stdin",
+    );
+  });
 });
+
+function findCommand(parent: ReturnType<typeof createProgram>, name: string) {
+  const command = parent.commands.find((candidate) => candidate.name() === name);
+  if (!command) throw new Error(`Command '${name}' was not registered`);
+  return command;
+}

@@ -45,8 +45,8 @@ function registerSave(parent: Command, runtime: Runtime, updating: boolean): voi
   parent
     .command(updating ? "update <issue-key> <comment-id>" : "add <issue-key>")
     .description(`${updating ? "Update" : "Add"} a comment`)
-    .option("--body <text>", "comment body")
-    .option("--body-file <file-or-dash>", "read comment body from a file or stdin")
+    .option("--body <text>", "comment body in Jira wiki markup")
+    .option("--body-file <file-or-dash>", "read Jira wiki markup from a file or stdin")
     .action(async (...args: unknown[]) => {
       const command = args.at(-1) as Command;
       const local = args.at(-2) as { body?: string; bodyFile?: string };
