@@ -99,8 +99,8 @@ export class JiraApi {
     return this.client.request("GET", `/rest/api/2/issue/${segment(key)}/watchers`);
   }
 
-  comments(key: string): Promise<unknown> {
-    return this.client.request("GET", commentPath(key));
+  comments(key: string, options?: { maxResults?: number; orderBy?: string }): Promise<unknown> {
+    return this.client.request("GET", `${commentPath(key)}${query(options ?? {})}`);
   }
 
   comment(key: string, id: string): Promise<unknown> {
@@ -182,10 +182,10 @@ function commentPath(key: string): string {
   return `/rest/api/2/issue/${segment(key)}/comment`;
 }
 
-function query(values: Record<string, string | undefined>): string {
+function query(values: Record<string, string | number | undefined>): string {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(values))
-    if (value !== undefined) params.set(key, value);
+    if (value !== undefined) params.set(key, String(value));
   const result = params.toString();
   return result ? `?${result}` : "";
 }

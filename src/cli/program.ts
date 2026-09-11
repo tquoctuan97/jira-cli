@@ -9,8 +9,10 @@ import { registerIssue } from "./commands/issue.js";
 import { outputOption, positiveInteger } from "./options.js";
 import { writeError, writeResult } from "./output.js";
 import { Runtime } from "./runtime.js";
+import packageJson from "../../package.json" with { type: "json" };
+import { checkForUpdate } from "../application/update-check.js";
 
-export const VERSION = "0.2.0";
+export const VERSION = packageJson.version;
 
 export function createProgram(runtime = new Runtime()): Command {
   const program = new Command();
@@ -42,6 +44,12 @@ export function createProgram(runtime = new Runtime()): Command {
 export async function run(argv = process.argv): Promise<void> {
   const runtime = new Runtime();
   const program = createProgram(runtime);
+  const config = configFromArgv(argv);
+  const updateCheck = checkForUpdate({
+    ...(config === undefined ? {} : { config }),
+    quiet: argv.includes("--quiet"),
+    currentVersion: VERSION,
+  });
   try {
     await program.parseAsync(argv);
     if (runtime.result) await writeResult(runtime.result, runtime.options(program));
@@ -55,7 +63,16 @@ export async function run(argv = process.argv): Promise<void> {
     const output = readOutputFormat(program);
     writeError(safe, output);
     process.exitCode = safe.exitCode;
+  } finally {
+    await updateCheck;
   }
+}
+
+function configFromArgv(argv: readonly string[]): string | undefined {
+  const index = argv.findIndex((value) => value === "--config");
+  if (index >= 0) return argv[index + 1];
+  const inline = argv.find((value) => value.startsWith("--config="));
+  return inline?.slice("--config=".length);
 }
 
 function normalizeError(error: unknown): CliError {

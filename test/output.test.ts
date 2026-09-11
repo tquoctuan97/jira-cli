@@ -24,7 +24,7 @@ describe("output pipeline", () => {
 
     await writeResult(
       { value: { downloaded: "10", outputFile: destination }, outputFileHandled: true },
-      { output: "json", outputFile: destination, verbose: false },
+      { output: "json", outputFile: destination, quiet: false, verbose: false },
     );
 
     expect(await readFile(destination)).toEqual(binary);

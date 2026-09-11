@@ -24,10 +24,11 @@ export interface IssueGateway {
   unlink(id: string): Promise<void>;
   watch(key: string, watching: boolean): Promise<void>;
   watchers(key: string): Promise<unknown>;
+  comments(key: string, options?: { maxResults?: number; orderBy?: string }): Promise<unknown>;
 }
 
 export interface CommentGateway {
-  comments(key: string): Promise<unknown>;
+  comments(key: string, options?: { maxResults?: number; orderBy?: string }): Promise<unknown>;
   comment(key: string, id: string): Promise<unknown>;
   saveComment(key: string, id: string | undefined, body: string): Promise<unknown>;
   deleteComment(key: string, id: string): Promise<void>;

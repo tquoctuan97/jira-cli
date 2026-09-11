@@ -47,7 +47,25 @@ export function normalizeUser(value: unknown): unknown {
   });
 }
 
-export function normalizeIssue(value: unknown): unknown {
+const ISSUE_NORMALIZED_FIELDS = new Set([
+  "summary",
+  "description",
+  "issuetype",
+  "status",
+  "priority",
+  "project",
+  "assignee",
+  "reporter",
+  "labels",
+  "parent",
+  "created",
+  "updated",
+  "resolution",
+  "components",
+  "fixVersions",
+]);
+
+export function normalizeIssue(value: unknown, requestedFields?: readonly string[]): unknown {
   const issue = record(value);
   const fields = record(issue.fields);
   const issueType = record(fields.issuetype);
@@ -59,30 +77,33 @@ export function normalizeIssue(value: unknown): unknown {
   const parentFields = record(parent.fields);
   const resolution = record(fields.resolution);
 
-  return compact({
-    id: issue.id,
-    key: issue.key,
-    summary: fields.summary,
-    description: fields.description,
-    type: { id: issueType.id, name: issueType.name },
-    status: { id: status.id, name: status.name, category: statusCategory.key },
-    priority: { id: priority.id, name: priority.name },
-    project: { id: project.id, key: project.key, name: project.name },
-    assignee: normalizeUser(fields.assignee),
-    reporter: normalizeUser(fields.reporter),
-    labels: fields.labels,
-    parent: { id: parent.id, key: parent.key, summary: parentFields.summary },
-    created: fields.created,
-    updated: fields.updated,
-    resolution: { id: resolution.id, name: resolution.name },
-    components: normalizeNamedList(fields.components),
-    fixVersions: normalizeNamedList(fields.fixVersions),
-    ...Object.fromEntries(
-      Object.entries(fields)
-        .filter(([key]) => key.startsWith("customfield_"))
-        .map(([key, child]) => [key, compact(child)]),
-    ),
-  });
+  const requested = requestedFields === undefined ? undefined : new Set(requestedFields);
+  const include = (field: string) => requested === undefined || requested.has(field);
+  const normalized: Record<string, unknown> = { id: issue.id, key: issue.key };
+  if (include("summary")) normalized.summary = fields.summary;
+  if (include("description")) normalized.description = fields.description;
+  if (include("issuetype")) normalized.type = { id: issueType.id, name: issueType.name };
+  if (include("status"))
+    normalized.status = { id: status.id, name: status.name, category: statusCategory.key };
+  if (include("priority")) normalized.priority = { id: priority.id, name: priority.name };
+  if (include("project"))
+    normalized.project = { id: project.id, key: project.key, name: project.name };
+  if (include("assignee")) normalized.assignee = normalizeUser(fields.assignee);
+  if (include("reporter")) normalized.reporter = normalizeUser(fields.reporter);
+  if (include("labels")) normalized.labels = fields.labels;
+  if (include("parent"))
+    normalized.parent = { id: parent.id, key: parent.key, summary: parentFields.summary };
+  if (include("created")) normalized.created = fields.created;
+  if (include("updated")) normalized.updated = fields.updated;
+  if (include("resolution")) normalized.resolution = { id: resolution.id, name: resolution.name };
+  if (include("components")) normalized.components = normalizeNamedList(fields.components);
+  if (include("fixVersions")) normalized.fixVersions = normalizeNamedList(fields.fixVersions);
+  for (const [key, child] of Object.entries(fields)) {
+    if (ISSUE_NORMALIZED_FIELDS.has(key)) continue;
+    if (requested === undefined ? key.startsWith("customfield_") : requested.has(key))
+      normalized[key] = compact(child);
+  }
+  return compact(normalized);
 }
 
 function normalizeNamedList(value: unknown): unknown {
@@ -90,5 +111,62 @@ function normalizeNamedList(value: unknown): unknown {
   return value.map((item) => {
     const entry = record(item);
     return compact({ id: entry.id, name: entry.name });
+  });
+}
+
+export function normalizeComment(value: unknown): unknown {
+  const comment = record(value);
+  return compact({
+    id: comment.id,
+    body: comment.body,
+    author: normalizeUser(comment.author),
+    created: comment.created,
+    updated: comment.updated,
+  });
+}
+
+export function normalizeAttachment(value: unknown): unknown {
+  const attachment = record(value);
+  return compact({
+    id: attachment.id,
+    filename: attachment.filename,
+    size: attachment.size,
+    mimeType: attachment.mimeType,
+    author: normalizeUser(attachment.author),
+    created: attachment.created,
+  });
+}
+
+export function normalizeIssueLink(value: unknown): unknown {
+  const link = record(value);
+  const type = record(link.type);
+  const inward = record(link.inwardIssue);
+  const outward = record(link.outwardIssue);
+  const isInward = Object.keys(inward).length > 0;
+  const direction = isInward ? "inward" : "outward";
+  return compact({
+    id: link.id,
+    direction,
+    type: {
+      id: type.id,
+      name: type.name,
+      label: direction === "inward" ? type.inward : type.outward,
+    },
+    issue: normalizeLinkedIssue(isInward ? inward : outward),
+  });
+}
+
+function normalizeLinkedIssue(issue: JiraRecord): unknown {
+  const fields = record(issue.fields);
+  const issueType = record(fields.issuetype);
+  const status = record(fields.status);
+  const priority = record(fields.priority);
+  return compact({
+    id: issue.id,
+    key: issue.key,
+    summary: fields.summary,
+    type: { id: issueType.id, name: issueType.name },
+    status: { id: status.id, name: status.name },
+    priority: { id: priority.id, name: priority.name },
   });
 }

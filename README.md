@@ -203,6 +203,25 @@ jira-cli issue search \
   --output-file ./issues.json
 ```
 
+Normalized `issue get` output requests a bounded set of standard fields by
+default. `issue search` uses a smaller set that omits description and reporter.
+Pass `--fields` to select custom Jira fields; `--output raw` without `--fields`
+remains the unfiltered Jira response.
+
+Retrieve bounded agent context with:
+
+```bash
+jira-cli issue context FE-123
+jira-cli issue context FE-123 --comment-limit 50
+```
+
+The context envelope contains the issue, newest comments, attachment metadata,
+and local issue links. `--comment-limit 0` skips the comments request. The npm
+network check runs at most once per 24 hours; while a cached newer version is
+available, its notification is written to `stderr` on each invocation. Use
+`--quiet` or `JIRA_CLI_NO_UPDATE_CHECK=1` to disable checks and notices. The CLI
+never installs updates automatically.
+
 ## Commands
 
 ### Authentication
@@ -218,6 +237,7 @@ jira-cli auth logout
 ```bash
 jira-cli issue get <issue-key>
 jira-cli issue search --jql <query>
+jira-cli issue context <issue-key> [--comment-limit <0-100>]
 jira-cli issue create [field-options]
 jira-cli issue create --input <file-or-dash>
 jira-cli issue update <issue-key> [field-options]

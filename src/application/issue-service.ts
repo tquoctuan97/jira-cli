@@ -1,5 +1,12 @@
 import { CliError, invalidInput } from "../domain/errors.js";
-import { compact, normalizeIssue, normalizeUser } from "../domain/normalize.js";
+import {
+  compact,
+  normalizeAttachment,
+  normalizeComment,
+  normalizeIssue,
+  normalizeIssueLink,
+  normalizeUser,
+} from "../domain/normalize.js";
 import type { IssueGateway } from "./ports/jira.js";
 import { asArray, asRecord, type JsonRecord } from "./value.js";
 
@@ -14,12 +21,83 @@ export type SimpleIssueFields = {
   parent?: string;
 };
 
+const ISSUE_GET_FIELDS = [
+  "summary",
+  "description",
+  "issuetype",
+  "status",
+  "priority",
+  "project",
+  "assignee",
+  "reporter",
+  "labels",
+  "parent",
+  "created",
+  "updated",
+  "resolution",
+  "components",
+  "fixVersions",
+] as const;
+const ISSUE_SEARCH_FIELDS = [
+  "summary",
+  "issuetype",
+  "status",
+  "priority",
+  "project",
+  "assignee",
+  "labels",
+  "parent",
+  "created",
+  "updated",
+] as const;
+const ISSUE_CONTEXT_FIELDS = ISSUE_GET_FIELDS;
+
 export class IssueService {
   constructor(private readonly api: IssueGateway) {}
 
   async get(key: string, fields: string | undefined, raw: boolean): Promise<unknown> {
-    const result = await this.api.getIssue(key, fields);
-    return raw ? result : normalizeIssue(result);
+    const requested = resolveFields(fields, ISSUE_GET_FIELDS, raw);
+    const result = await this.api.getIssue(key, requested?.join(","));
+    return raw ? result : normalizeIssue(result, requested);
+  }
+
+  async context(
+    key: string,
+    fields: string | undefined,
+    commentLimit: number,
+    raw: boolean,
+  ): Promise<unknown> {
+    const requested = splitCsv(fields) ?? [...ISSUE_CONTEXT_FIELDS];
+    const issueFields = [...new Set([...requested, "attachment", "issuelinks"])];
+    const normalizedFields = requested.filter(
+      (field) => field !== "attachment" && field !== "issuelinks",
+    );
+    const issueRequest = this.api.getIssue(key, issueFields.join(","));
+    const commentsRequest =
+      commentLimit === 0
+        ? Promise.resolve(undefined)
+        : this.api.comments(key, {
+            maxResults: commentLimit,
+            orderBy: "-created",
+          });
+    const [issueResult, commentsResult] = await Promise.all([issueRequest, commentsRequest]);
+    if (raw) return { issue: issueResult, comments: commentsResult };
+    const issue = asRecord(issueResult);
+    const fieldsObject = asRecord(issue.fields);
+    const commentData = asRecord(commentsResult);
+    const items = asArray(commentData.comments).map(normalizeComment);
+    const total = numeric(commentData.total, items.length);
+    return {
+      issue: normalizeIssue(issueResult, normalizedFields),
+      comments: {
+        total,
+        returned: items.length,
+        hasMore: items.length < total,
+        items,
+      },
+      attachments: asArray(fieldsObject.attachment).map(normalizeAttachment),
+      links: asArray(fieldsObject.issuelinks).map(normalizeIssueLink),
+    };
   }
 
   async history(key: string, raw: boolean): Promise<unknown> {
@@ -38,15 +116,15 @@ export class IssueService {
     maxItems: number;
     raw: boolean;
   }): Promise<unknown> {
+    const fields = resolveFields(options.fields, ISSUE_SEARCH_FIELDS, options.raw);
     if (!options.all) {
-      const fields = splitCsv(options.fields);
       const result = await this.api.searchIssues({
         jql: options.jql,
         ...(fields === undefined ? {} : { fields }),
         startAt: options.startAt,
         maxResults: options.limit,
       });
-      return options.raw ? result : normalizeSearch(result);
+      return options.raw ? result : normalizeSearch(result, fields);
     }
 
     const issues: unknown[] = [];
@@ -54,7 +132,6 @@ export class IssueService {
     let total = 0;
     while (issues.length < options.maxItems) {
       const maxResults = Math.min(options.limit, options.maxItems - issues.length);
-      const fields = splitCsv(options.fields);
       const page = asRecord(
         await this.api.searchIssues({
           jql: options.jql,
@@ -78,7 +155,7 @@ export class IssueService {
       nextStartAt:
         options.startAt + issues.length < total ? options.startAt + issues.length : undefined,
     };
-    return options.raw ? result : normalizeSearch(result);
+    return options.raw ? result : normalizeSearch(result, fields);
   }
 
   async create(
@@ -240,13 +317,13 @@ function resolveTransition(transitions: JsonRecord[], value: string): JsonRecord
   );
 }
 
-function normalizeSearch(value: unknown): unknown {
+function normalizeSearch(value: unknown, fields?: readonly string[]): unknown {
   const data = asRecord(value);
   return compact({
     startAt: data.startAt,
     maxResults: data.maxResults,
     total: data.total,
-    issues: asArray(data.issues).map(normalizeIssue),
+    issues: asArray(data.issues).map((issue) => normalizeIssue(issue, fields)),
     hasMore: data.hasMore,
     nextStartAt: data.nextStartAt,
   });
@@ -258,6 +335,16 @@ function splitCsv(value: string | undefined): string[] | undefined {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function resolveFields(
+  value: string | undefined,
+  defaults: readonly string[],
+  raw: boolean,
+): string[] | undefined {
+  const explicit = splitCsv(value);
+  if (explicit !== undefined) return explicit;
+  return raw ? undefined : [...defaults];
 }
 
 function numeric(value: unknown, fallback: number): number {

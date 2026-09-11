@@ -5,6 +5,7 @@ export type GlobalOptions = {
   output: OutputFormat;
   outputFile?: string;
   timeout?: number;
+  quiet: boolean;
   verbose: boolean;
 };
 

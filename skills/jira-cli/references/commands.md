@@ -16,6 +16,7 @@ Use `JIRA_BASE_URL` and `JIRA_TOKEN`, or `--token-stdin`, for automation so comm
 jira-cli issue get <issue-key> [--fields <csv>]
 jira-cli issue search --jql <query> [--start-at <n>] [--limit <n>]
 jira-cli issue search --jql <query> --all [--max-items <n>]
+jira-cli issue context <issue-key> [--comment-limit <0-100>] [--fields <csv>]
 jira-cli issue create [field-options]
 jira-cli issue create --input <file-or-dash>
 jira-cli issue update <issue-key> [field-options]
@@ -84,4 +85,11 @@ jira-cli issue search --jql 'parent = <parent-key>' --fields key,summary,status 
 jira-cli issue create-meta --project <project-key> --type <exact-name-or-id>
 ```
 
-Global output options include `--output json|raw|markdown|text`, `--fields <csv>`, `--output-file <path>`, and `--timeout <ms>`.
+Global output options include `--output json|raw|markdown|text`, `--fields <csv>`, `--output-file <path>`, `--timeout <ms>`, and `--quiet`.
+
+`issue get` and `issue search` apply bounded normalized field allowlists by
+default. Explicit `--fields` values, including custom Jira field IDs, are
+retained. `--output raw` without `--fields` preserves the complete Jira
+response. `issue context` returns a stable envelope containing `issue`,
+`comments`, `attachments`, and `links`; comments are ordered newest-first and
+limited to 20 by default (0 skips the comments request).
