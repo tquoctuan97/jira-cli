@@ -4,10 +4,10 @@ import { commentLimit } from "../src/cli/options.js";
 import { Runtime } from "../src/cli/runtime.js";
 
 describe("CLI command tree", () => {
-  it("reports the v0.2.0 release and excludes the removed installer", () => {
+  it("reports the package release version and excludes the removed installer", () => {
     const program = createProgram();
 
-    expect(program.version()).toBe("0.2.0");
+    expect(program.version()).toBe("0.3.0");
     expect(program.commands.map((command) => command.name())).not.toContain("install");
   });
 
