@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createProgram } from "../src/cli/program.js";
 import { commentLimit } from "../src/cli/options.js";
 import { Runtime } from "../src/cli/runtime.js";
@@ -7,7 +7,7 @@ describe("CLI command tree", () => {
   it("reports the package release version and excludes the removed installer", () => {
     const program = createProgram();
 
-    expect(program.version()).toBe("0.3.0");
+    expect(program.version()).toBe("0.3.1");
     expect(program.commands.map((command) => command.name())).not.toContain("install");
   });
 
@@ -68,6 +68,31 @@ describe("CLI command tree", () => {
     expect(commentAdd.options.find((option) => option.long === "--body-file")?.description).toBe(
       "read Jira wiki markup from a file or stdin",
     );
+  });
+
+  it("uses the global output file option as the attachment download destination", async () => {
+    const runtime = new Runtime();
+    const download = vi.fn().mockResolvedValue({ downloaded: "55342" });
+    vi.spyOn(runtime, "jira").mockResolvedValue({
+      issues: {} as never,
+      comments: {} as never,
+      attachments: { download } as never,
+      discovery: {} as never,
+    });
+    const program = createProgram(runtime);
+
+    await program.parseAsync([
+      "node",
+      "jira-cli",
+      "attachment",
+      "download",
+      "55342",
+      "--output-file",
+      "/tmp/video.mp4",
+    ]);
+
+    expect(download).toHaveBeenCalledWith("55342", "/tmp/video.mp4", false);
+    expect(runtime.result).toMatchObject({ outputFileHandled: true });
   });
 });
 

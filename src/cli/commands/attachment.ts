@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { invalidInput } from "../../domain/errors.js";
 import { confirm } from "../options.js";
 import type { Runtime } from "../runtime.js";
 
@@ -28,19 +29,18 @@ export function registerAttachment(program: Command, runtime: Runtime): void {
   attachment
     .command("download <attachment-id>")
     .description("Download an attachment")
-    .requiredOption("--output-file <path>", "destination path")
     .option("--force", "overwrite an existing destination")
-    .action(
-      async (id: string, local: { outputFile: string; force?: boolean }, command: Command) => {
-        const options = runtime.options(command);
-        runtime.setResult(
-          await (
-            await runtime.jira(options)
-          ).attachments.download(id, local.outputFile, Boolean(local.force)),
-          true,
-        );
-      },
-    );
+    .action(async (id: string, local: { force?: boolean }, command: Command) => {
+      const options = runtime.options(command);
+      if (!options.outputFile)
+        throw invalidInput("The --output-file <path> option is required for attachment downloads");
+      runtime.setResult(
+        await (
+          await runtime.jira(options)
+        ).attachments.download(id, options.outputFile, Boolean(local.force)),
+        true,
+      );
+    });
 
   attachment
     .command("delete <attachment-id>")
