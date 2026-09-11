@@ -15,6 +15,12 @@ export function nonNegativeInteger(value: string): number {
   return result;
 }
 
+export function commentLimit(value: string): number {
+  const result = nonNegativeInteger(value);
+  if (result > 100) throw new InvalidArgumentError("must be between 0 and 100");
+  return result;
+}
+
 export function confirm(expected: string, actual: string): void {
   if (actual !== expected)
     throw invalidInput(`Destructive operation requires --confirm ${expected}`);

@@ -408,6 +408,20 @@ Fields retained include:
 - requested descriptions, comments, labels, links, and timestamps;
 - custom-field IDs and values when requested.
 
+`issue get` requests `summary`, `description`, `issuetype`, `status`,
+`priority`, `project`, `assignee`, `reporter`, `labels`, `parent`, `created`,
+`updated`, `resolution`, `components`, and `fixVersions` by default. `issue
+search` uses the compact default of `summary`, `issuetype`, `status`, `priority`,
+`project`, `assignee`, `labels`, `parent`, `created`, and `updated`. Explicit
+`--fields` replaces the applicable list and can retain custom or unknown Jira
+fields. Raw output without `--fields` remains unfiltered.
+
+`issue context <issue-key>` returns a stable JSON envelope with `issue`,
+`comments`, `attachments`, and `links`. The comments section contains `total`,
+`returned`, `hasMore`, and `items`; comments are newest-first and limited to 20
+by default. Context deliberately retains empty collections, and
+`--comment-limit 0` skips the comments request.
+
 Example issue output:
 
 ```json

@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import type { SimpleIssueFields } from "../../application/issue-service.js";
 import { readJsonInput } from "../io.js";
-import { confirm, nonNegativeInteger, positiveInteger } from "../options.js";
+import { commentLimit, confirm, nonNegativeInteger, positiveInteger } from "../options.js";
 import type { Runtime } from "../runtime.js";
 
 type FieldOptions = SimpleIssueFields & { input?: string };
@@ -17,6 +17,19 @@ export function registerIssue(program: Command, runtime: Runtime): void {
       const services = await runtime.jira(options);
       runtime.setResult(
         await services.issues.get(key, command.optsWithGlobals().fields, isRaw(options)),
+      );
+    });
+
+  issue
+    .command("context <issue-key>")
+    .description("Get an issue with bounded comments, attachments, and links")
+    .option("--comment-limit <number>", "maximum comments to return (0-100)", commentLimit, 20)
+    .action(async (key: string, local: { commentLimit: number }, command: Command) => {
+      const options = runtime.options(command);
+      runtime.setResult(
+        await (
+          await runtime.jira(options)
+        ).issues.context(key, command.optsWithGlobals().fields, local.commentLimit, isRaw(options)),
       );
     });
 

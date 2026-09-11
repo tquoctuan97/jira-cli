@@ -1,4 +1,4 @@
-import { compact, normalizeUser } from "../domain/normalize.js";
+import { compact, normalizeComment } from "../domain/normalize.js";
 import type { CommentGateway } from "./ports/jira.js";
 import { asArray, asRecord } from "./value.js";
 
@@ -26,15 +26,4 @@ export class CommentService {
     await this.api.deleteComment(key, id);
     return { deleted: id };
   }
-}
-
-function normalizeComment(value: unknown): unknown {
-  const comment = asRecord(value);
-  return compact({
-    id: comment.id,
-    body: comment.body,
-    author: normalizeUser(comment.author),
-    created: comment.created,
-    updated: comment.updated,
-  });
 }

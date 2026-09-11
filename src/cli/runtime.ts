@@ -16,6 +16,7 @@ const globalOptionsSchema = z.object({
   output: z.enum(["json", "raw", "markdown", "text"]).default("json"),
   outputFile: z.string().optional(),
   timeout: z.number().int().positive().optional(),
+  quiet: z.boolean().default(false),
   verbose: z.boolean().default(false),
 });
 
@@ -34,6 +35,7 @@ export class Runtime {
     const parsed = globalOptionsSchema.parse(command.optsWithGlobals());
     return {
       output: parsed.output,
+      quiet: parsed.quiet,
       verbose: parsed.verbose,
       ...(parsed.config === undefined ? {} : { config: parsed.config }),
       ...(parsed.outputFile === undefined ? {} : { outputFile: parsed.outputFile }),

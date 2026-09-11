@@ -11,6 +11,10 @@ export function credentialsPath(sessionOverride?: string): string {
     : join(configDirectory(), "credentials.json");
 }
 
+export function updateCheckPath(sessionOverride?: string): string {
+  return join(dirname(sessionPath(sessionOverride)), "update-check.json");
+}
+
 function configDirectory(): string {
   if (platform() === "win32")
     return join(process.env.LOCALAPPDATA ?? join(homedir(), "AppData", "Local"), "jira-cli");

@@ -62,7 +62,7 @@ describe("FileCredentialStore", () => {
     );
 
     const result = await new Runtime().login(
-      { config: sessionPath, output: "json", verbose: false },
+      { config: sessionPath, output: "json", quiet: false, verbose: false },
       "https://jira.example.com",
       token,
     );

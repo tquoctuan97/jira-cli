@@ -1,6 +1,6 @@
 import { access, stat, writeFile } from "node:fs/promises";
 import { CliError, invalidInput } from "../domain/errors.js";
-import { compact, normalizeUser } from "../domain/normalize.js";
+import { compact, normalizeAttachment } from "../domain/normalize.js";
 import type { AttachmentGateway } from "./ports/jira.js";
 import { asArray, asRecord } from "./value.js";
 
@@ -53,18 +53,6 @@ export class AttachmentService {
     await this.api.deleteAttachment(id);
     return { deleted: id };
   }
-}
-
-function normalizeAttachment(value: unknown): unknown {
-  const attachment = asRecord(value);
-  return compact({
-    id: attachment.id,
-    filename: attachment.filename,
-    size: attachment.size,
-    mimeType: attachment.mimeType,
-    author: normalizeUser(attachment.author),
-    created: attachment.created,
-  });
 }
 
 async function exists(path: string): Promise<boolean> {
